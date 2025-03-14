@@ -4,7 +4,6 @@ import model.QuanTri;
 import java.sql.*;
 
 public class QuanTriDAO {
-
     private String jdbcURL = "jdbc:mysql://localhost:3306/LTQ_QuanLyBanXe57";
     private String jdbcUsername = "root";
     private String jdbcPassword = "";
@@ -25,6 +24,7 @@ public class QuanTriDAO {
                 quanTri = new QuanTri(rs.getInt("id"), rs.getString("TaiKhoan"), rs.getString("MatKhau"), rs.getBoolean("TrangThai"));
             }
         } catch (SQLException e) {
+            System.err.println("Error querying the database: " + e.getMessage()); // Add logging for errors
             e.printStackTrace();
         }
         return quanTri;
@@ -37,8 +37,14 @@ public class QuanTriDAO {
             preparedStatement.setString(1, quanTri.getTaiKhoan());
             preparedStatement.setString(2, quanTri.getMatKhau());
             preparedStatement.setBoolean(3, quanTri.isTrangThai());
-            preparedStatement.executeUpdate();
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("User added successfully!");
+            } else {
+                System.out.println("Failed to add user.");
+            }
         } catch (SQLException e) {
+            System.err.println("Error inserting into the database: " + e.getMessage());
             e.printStackTrace();
         }
     }

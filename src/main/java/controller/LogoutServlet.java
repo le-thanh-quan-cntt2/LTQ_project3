@@ -12,10 +12,10 @@ public class LogoutServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Xóa thông tin người dùng trong session
+        
         request.getSession().invalidate();
 
-        // Chuyển hướng về trang chủ
+  
         response.sendRedirect("XeMayServlet?action=list");
     }
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import dao.XeMayDA;
-import dao.DonHangDAO;
+import dao.LTQDonHangDAO;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,7 +15,7 @@ import model.XeMay;
 import model.Cart;
 
 @WebServlet("/XeMayServlet")
-public class XeMayServlet extends HttpServlet {
+public class LTQXeMayServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private XeMayDA xeMayDAO;
 
@@ -50,18 +50,55 @@ public class XeMayServlet extends HttpServlet {
     }
 
     private void listXeMay(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<XeMay> listXeMay = xeMayDAO.selectAll();
-        request.setAttribute("listXeMay", listXeMay);
+      
+        String searchTenXe = request.getParameter("searchTenXe");
+        String searchLoaiXe = request.getParameter("searchLoaiXe");
+        String searchHangXe = request.getParameter("searchHangXe");
+
+       
+        List<XeMay> listXeMay;
+        if (searchTenXe != null && !searchTenXe.isEmpty()) {
+            listXeMay = xeMayDAO.searchByName(searchTenXe);
+        } else if (searchLoaiXe != null && !searchLoaiXe.isEmpty()) {
+            listXeMay = xeMayDAO.searchByType(searchLoaiXe);
+        } else if (searchHangXe != null && !searchHangXe.isEmpty()) {
+            listXeMay = xeMayDAO.searchByBrand(searchHangXe);
+        } else {
+            listXeMay = xeMayDAO.selectAll(); 
+        }
+
+       
+        int pageSize = 6; 
+        int currentPage = 1; 
+
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            currentPage = Integer.parseInt(pageParam);
+        }
+
+        
+        int totalPages = (int) Math.ceil(listXeMay.size() / (double) pageSize);
+        int startIndex = (currentPage - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, listXeMay.size());
+
+        
+        List<XeMay> pageList = listXeMay.subList(startIndex, endIndex);
+
+       
+        request.setAttribute("listXeMay", pageList);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", currentPage);
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("listXeMay.jsp");
         dispatcher.forward(request, response);
     }
-
     private void addToCart(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         XeMay xeMay = xeMayDAO.selectById(id);
-        int quantity = 1; // Default quantity
+        int quantity = 1;
 
-        // Add the item to the session cart
+        
         Cart cart = (Cart) request.getSession().getAttribute("cart");
         if (cart == null) {
             cart = new Cart();
@@ -76,12 +113,11 @@ public class XeMayServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         XeMay xeMay = xeMayDAO.selectById(id);
 
-        // Add to cart temporarily for immediate purchase
+     
         Cart cart = new Cart();
         cart.addItem(xeMay, 1);
         request.getSession().setAttribute("cart", cart);
 
-        // Redirect to checkout page to fill out personal information
         response.sendRedirect("checkout.jsp");
     }
 
@@ -93,19 +129,17 @@ public class XeMayServlet extends HttpServlet {
     }
 
     private void checkout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Kiểm tra xem giỏ hàng có tồn tại và có sản phẩm hay không
+        
         Cart cart = (Cart) request.getSession().getAttribute("cart");
         if (cart == null || cart.getItems().isEmpty()) {
-            // Nếu giỏ hàng trống, chuyển về trang giỏ hàng
+         
             response.sendRedirect("XeMayServlet?action=viewCart");
             return;
         }
 
-        // Tiến hành thanh toán và xử lý đơn hàng nếu giỏ hàng không trống
-        // Thực hiện các bước thanh toán tiếp theo...
-        response.sendRedirect("checkout.jsp"); // Chuyển tới trang thanh toán
+     
+        response.sendRedirect("checkout.jsp");
     }
- 
 
     private void removeItem(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));

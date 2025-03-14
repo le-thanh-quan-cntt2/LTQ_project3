@@ -7,7 +7,7 @@ import model.XeMay;
 import java.sql.*;
 import java.util.Map;
 
-public class DonHangDAO {
+public class LTQDonHangDAO {
     private static final String INSERT_ORDER = "INSERT INTO Don_Hang (Ma_Khach_Hang, Ma_Nhan_Vien, So_Luong, Ma_Xe, Trang_Thai_Don) VALUES (?, ?, ?, ?, ?)";
     private static final String INSERT_PAYMENT = "INSERT INTO Thanh_Toan (Ma_Don_Hang, So_Tien, Phuong_Thuc_Thanh_Toan) VALUES (?, ?, ?)";
     private static final String INSERT_INVOICE = "INSERT INTO Hoa_Don (Ma_Don_Hang, So_Tien, Thue) VALUES (?, ?, ?)";

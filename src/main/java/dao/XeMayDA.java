@@ -1,13 +1,8 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.XeMay;
 
 public class XeMayDA {
@@ -16,10 +11,10 @@ public class XeMayDA {
     private String jdbcPassword = "";
 
     private static final String SELECT_ALL = "SELECT * FROM Xe_May";
-    private static final String INSERT = "INSERT INTO Xe_May (Ten_Xe, Loai_Xe, Hang_San_Xuat, Nam_San_Xuat, Mau_Sac, Gia_Ban, Tinh_Trang, Hinh_Anh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM Xe_May WHERE Ma_Xe = ?";
-    private static final String UPDATE = "UPDATE Xe_May SET Ten_Xe = ?, Loai_Xe = ?, Hang_San_Xuat = ?, Nam_San_Xuat = ?, Mau_Sac = ?, Gia_Ban = ?, Tinh_Trang = ?, Hinh_Anh = ? WHERE Ma_Xe = ?";
     private static final String SELECT_BY_ID = "SELECT * FROM Xe_May WHERE Ma_Xe = ?";
+    private static final String SEARCH_BY_NAME = "SELECT * FROM Xe_May WHERE Ten_Xe LIKE ?";
+    private static final String SEARCH_BY_TYPE = "SELECT * FROM Xe_May WHERE Loai_Xe = ?";
+    private static final String SEARCH_BY_BRAND = "SELECT * FROM Xe_May WHERE Hang_San_Xuat = ?";
 
     protected Connection getConnection() throws SQLException {
         try {
@@ -36,7 +31,7 @@ public class XeMayDA {
              PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL);
              ResultSet rs = preparedStatement.executeQuery()) {
             while (rs.next()) {
-                list.add(new XeMay(
+                XeMay xeMay = new XeMay(
                     rs.getInt("Ma_Xe"),
                     rs.getString("Ten_Xe"),
                     rs.getString("Loai_Xe"),
@@ -46,7 +41,8 @@ public class XeMayDA {
                     rs.getDouble("Gia_Ban"),
                     rs.getString("Tinh_Trang"),
                     rs.getString("Hinh_Anh")
-                ));
+                );
+                list.add(xeMay);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,51 +50,87 @@ public class XeMayDA {
         return list;
     }
 
-    public void insert(XeMay xeMay) {
+    // Recherche par nom de véhicule
+    public List<XeMay> searchByName(String name) {
+        List<XeMay> list = new ArrayList<>();
+        String query = "%" + name + "%";
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT)) {
-            preparedStatement.setString(1, xeMay.getTenXe());
-            preparedStatement.setString(2, xeMay.getLoaiXe());
-            preparedStatement.setString(3, xeMay.getHangSanXuat());
-            preparedStatement.setInt(4, xeMay.getNamSanXuat());
-            preparedStatement.setString(5, xeMay.getMauSac());
-            preparedStatement.setDouble(6, xeMay.getGiaBan());
-            preparedStatement.setString(7, xeMay.getTinhTrang());
-            preparedStatement.setString(8, xeMay.getHinhAnh());
-            preparedStatement.executeUpdate();
+             PreparedStatement preparedStatement = connection.prepareStatement(SEARCH_BY_NAME)) {
+            preparedStatement.setString(1, query);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                XeMay xeMay = new XeMay(
+                    rs.getInt("Ma_Xe"),
+                    rs.getString("Ten_Xe"),
+                    rs.getString("Loai_Xe"),
+                    rs.getString("Hang_San_Xuat"),
+                    rs.getInt("Nam_San_Xuat"),
+                    rs.getString("Mau_Sac"),
+                    rs.getDouble("Gia_Ban"),
+                    rs.getString("Tinh_Trang"),
+                    rs.getString("Hinh_Anh")
+                );
+                list.add(xeMay);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return list;
     }
 
-    public void update(XeMay xeMay) {
+    // Recherche par type de véhicule (Sport, Scooter, etc.)
+    public List<XeMay> searchByType(String type) {
+        List<XeMay> list = new ArrayList<>();
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
-            preparedStatement.setString(1, xeMay.getTenXe());
-            preparedStatement.setString(2, xeMay.getLoaiXe());
-            preparedStatement.setString(3, xeMay.getHangSanXuat());
-            preparedStatement.setInt(4, xeMay.getNamSanXuat());
-            preparedStatement.setString(5, xeMay.getMauSac());
-            preparedStatement.setDouble(6, xeMay.getGiaBan());
-            preparedStatement.setString(7, xeMay.getTinhTrang());
-            preparedStatement.setString(8, xeMay.getHinhAnh());
-            preparedStatement.setInt(9, xeMay.getMaXe());
-            preparedStatement.executeUpdate();
+             PreparedStatement preparedStatement = connection.prepareStatement(SEARCH_BY_TYPE)) {
+            preparedStatement.setString(1, type);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                XeMay xeMay = new XeMay(
+                    rs.getInt("Ma_Xe"),
+                    rs.getString("Ten_Xe"),
+                    rs.getString("Loai_Xe"),
+                    rs.getString("Hang_San_Xuat"),
+                    rs.getInt("Nam_San_Xuat"),
+                    rs.getString("Mau_Sac"),
+                    rs.getDouble("Gia_Ban"),
+                    rs.getString("Tinh_Trang"),
+                    rs.getString("Hinh_Anh")
+                );
+                list.add(xeMay);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return list;
     }
 
-    public void delete(int id) {
+    // Recherche par marque de véhicule
+    public List<XeMay> searchByBrand(String brand) {
+        List<XeMay> list = new ArrayList<>();
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE)) {
-            preparedStatement.setInt(1, id);
-            preparedStatement.executeUpdate();
+             PreparedStatement preparedStatement = connection.prepareStatement(SEARCH_BY_BRAND)) {
+            preparedStatement.setString(1, brand);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                XeMay xeMay = new XeMay(
+                    rs.getInt("Ma_Xe"),
+                    rs.getString("Ten_Xe"),
+                    rs.getString("Loai_Xe"),
+                    rs.getString("Hang_San_Xuat"),
+                    rs.getInt("Nam_San_Xuat"),
+                    rs.getString("Mau_Sac"),
+                    rs.getDouble("Gia_Ban"),
+                    rs.getString("Tinh_Trang"),
+                    rs.getString("Hinh_Anh")
+                );
+                list.add(xeMay);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return list;
     }
-    
 
     public XeMay selectById(int id) {
         XeMay xeMay = null;
@@ -124,6 +156,4 @@ public class XeMayDA {
         }
         return xeMay;
     }
-   
-
 }
